@@ -4,7 +4,7 @@ import Auth from "../routers/Auth";
 import Home from "../routers/Home";
 import Profile from "routers/Profile";
 import Navigation from "./Navigation";
-const RouterComponent = ({ isLogin }) => {
+const RouterComponent = ({ isLogin, userObj }) => {
   return (
     <>
       <Router>
@@ -13,7 +13,7 @@ const RouterComponent = ({ isLogin }) => {
           {isLogin ? (
             <>
               <Route exact path="/">
-                <Home />
+                <Home userObj={userObj} />
               </Route>
 
               <Route exact path="/profile">
