@@ -8,8 +8,10 @@ function App() {
 
   //로그인 유저 확인
   //console.log(authService.currentUser);
+  //Boolean(userObj)을 이용하여 랜더 줄이기
   const [isLogin, setIsLogin] = useState(authService.currentUser);
 
+  //유저정보
   const [userObj, setUserObj] = useState(null);
 
   useEffect(() => {
@@ -28,6 +30,7 @@ function App() {
   return (
     <>
       {init ? (
+        //<AppRouter isLogin={Boolean(userObj)} userObj={userObj} />
         <AppRouter isLogin={isLogin} userObj={userObj} />
       ) : (
         <>

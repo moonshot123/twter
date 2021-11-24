@@ -8,11 +8,14 @@ import {
   query,
   onSnapshot,
 } from "firebase/firestore";
+import { ref, uploadString } from "@firebase/storage";
+import { storageService } from "Mybase";
+import { v4 as uuidv4 } from "uuid";
 const Home = ({ userObj }) => {
   //console.log(userObj);
   const [twter, setTwter] = useState("");
   const [twters, setTwters] = useState([]);
-
+  const [attachment, setAttachment] = useState();
   //getDocs를 사용하여 작성글 가져와서 저장하기
   // const getTwter = async () => {
   //   const getTwterDoc = await getDocs(collection(dbService, "twters"));
@@ -43,16 +46,24 @@ const Home = ({ userObj }) => {
     event.preventDefault();
 
     try {
-      const docRef = await addDoc(collection(dbService, "twters"), {
-        text: twter,
-        createdAt: Date.now(),
-        createdId: userObj.uid,
-      });
-      console.log("Document written with ID: ", docRef.id);
+      const fileRef = ref(storageService, `${userObj.uid}/${uuidv4()}`);
+      const response = await uploadString(fileRef, attachment, "data_url");
+      console.log(response);
     } catch (e) {
       console.error("Error adding document: ", e);
     }
-    setTwter("");
+
+    // try {
+    //   const docRef = await addDoc(collection(dbService, "twters"), {
+    //     text: twter,
+    //     createdAt: Date.now(),
+    //     createdId: userObj.uid,
+    //   });
+    //   console.log("Document written with ID: ", docRef.id);
+    // } catch (e) {
+    //   console.error("Error adding document: ", e);
+    // }
+    // setTwter("");
   };
 
   const onChange = (event) => {
@@ -62,7 +73,29 @@ const Home = ({ userObj }) => {
     setTwter(value);
   };
 
-  console.log(twters);
+  const onFileChange = (event) => {
+    //console.log(event.target.files);
+    const {
+      target: { files },
+    } = event;
+    const imgFile = files[0];
+    const reader = new FileReader();
+    reader.onloadend = (finishedEvent) => {
+      console.log(finishedEvent);
+      const {
+        currentTarget: { result },
+      } = finishedEvent;
+      setAttachment(result);
+    };
+
+    reader.readAsDataURL(imgFile);
+  };
+
+  const onClearAttachment = () => {
+    setAttachment(null);
+  };
+
+  //console.log(twters);
   return (
     <>
       <form onSubmit={onSubmit}>
@@ -73,7 +106,11 @@ const Home = ({ userObj }) => {
           maxLength={120}
           onChange={onChange}
         />
+        <input type="file" accept="image/*" onChange={onFileChange} />
         <input type="submit" value="입력" />
+        {attachment && <img src={attachment} width="50px" height="50px" />}
+
+        {attachment && <button onClick={onClearAttachment}>clear</button>}
       </form>
 
       <div>
