@@ -1,6 +1,8 @@
 import { doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { dbService } from "Mybase";
 import { useState } from "react";
+import { deleteObject, ref } from "firebase/storage";
+import { storageService } from "Mybase";
 
 export const Twter = ({ itemObj, isOwner }) => {
   const [editing, setEditing] = useState(false);
@@ -12,8 +14,8 @@ export const Twter = ({ itemObj, isOwner }) => {
 
     //true 삭제
     if (ok) {
-      const twterRef = doc(dbService, "twters", `${itemObj.id}`);
-      await deleteDoc(twterRef);
+      await deleteDoc(doc(dbService, "twters", `${itemObj.id}`));
+      await deleteObject(ref(storageService, itemObj.attachmentUrl));
       alert("삭제성공");
     } else {
       alert("삭제실패");
@@ -61,6 +63,9 @@ export const Twter = ({ itemObj, isOwner }) => {
         <>
           <div key={itemObj.id}>
             <h4>{itemObj.text}</h4>
+            {itemObj.attachmentUrl && (
+              <img src={itemObj.attachmentUrl} height="50px" width="50px" />
+            )}
             {isOwner && (
               <>
                 <button onClick={onDeleteClick}>Delete</button>
