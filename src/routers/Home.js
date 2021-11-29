@@ -59,7 +59,6 @@ const Home = ({ userObj }) => {
         let attachmentUrl = "";
         attachmentUrl = await getDownloadURL(response.ref);
 
-        console.log("attachmentUrl 있음확인");
         const docRef = await addDoc(collection(dbService, "twters"), {
           text: twter,
           createdAt: Date.now(),
