@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
-import { authService } from "Mybase";
+import React, { useEffect, useState } from "react";
+import { authService, dbService } from "Mybase";
 import { useHistory } from "react-router-dom";
-import { collection, getDocs, query, where } from "firebase/firestore";
-
-const Profile = ({ userObj }) => {
+import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { updateProfile } from "firebase/auth";
+const Profile = ({ userObj, refreshUser }) => {
+  const [newDisplayName, setNewDisplayName] = useState(userObj.displayName);
   const history = useHistory();
   const onClicksignOut = () => {
     authService.signOut();
@@ -11,19 +12,27 @@ const Profile = ({ userObj }) => {
   };
 
   const getMyTwter = async () => {
-    console.log(userObj);
+    //console.log(userObj);
     try {
-      const q = query(
-        collection(authService, "twters"),
-        where("createdId", "==", userObj.uid)
+      const querySnapshot = await getDocs(
+        query(
+          collection(dbService, "twters"),
+          where("creatorId", "==", userObj.uid),
+          orderBy("createdAt")
+        )
       );
 
-      const querySnapshot = await getDocs(q);
+      console.log(querySnapshot);
+
+      // console.log(
+      //   querySnapshot.docs.map((doc) => {
+      //     doc.data();
+      //   })
+      // );
+
       querySnapshot.forEach((doc) => {
         console.log(doc.id, " => ", doc.data());
       });
-
-      //
     } catch (e) {
       console.log(e);
     }
@@ -33,8 +42,36 @@ const Profile = ({ userObj }) => {
     getMyTwter();
   }, []);
 
+  const onChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setNewDisplayName(value);
+    refreshUser();
+  };
+
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    if (userObj.displayName !== newDisplayName) {
+      await updateProfile(authService.currentUser, {
+        displayName: newDisplayName,
+      });
+      refreshUser();
+    }
+  };
+
   return (
     <>
+      <form onSubmit={onSubmit}>
+        <input
+          onChange={onChange}
+          type="text"
+          placeholder="display name"
+          value={newDisplayName}
+        />
+        <input type="submit" placeholder="update name" value="수정" />
+      </form>
+
       <button onClick={onClicksignOut}> 로그아웃 </button>
     </>
   );
